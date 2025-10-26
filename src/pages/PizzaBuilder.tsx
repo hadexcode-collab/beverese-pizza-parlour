@@ -59,7 +59,8 @@ export default function PizzaBuilder() {
       },
       image: pizza.image,
     });
-    navigate("/cart");
+    // Small delay to ensure state updates before navigation
+    setTimeout(() => navigate("/cart"), 100);
   };
 
   return (
