@@ -11,6 +11,9 @@ import { useState } from "react";
 export default function Cart() {
   const { cart, removeFromCart, updateQuantity, applyPromoCode } = useCart();
   const [promoCode, setPromoCode] = useState("");
+  
+  console.log("Cart component - cart state:", cart);
+  console.log("Cart component - items length:", cart.items.length);
 
   const handleApplyPromo = () => {
     if (promoCode.trim()) {

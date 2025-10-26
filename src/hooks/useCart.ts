@@ -25,12 +25,14 @@ export const useCart = () => {
   }, [cart]);
 
   const addToCart = (item: Omit<CartItem, "id">) => {
+    console.log("addToCart called with:", item);
     const newItem: CartItem = {
       ...item,
       id: `${item.itemId}-${Date.now()}`,
     };
 
     setCart((prev) => {
+      console.log("Previous cart state:", prev);
       const items = [...prev.items, newItem];
       const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
       const gst = subtotal * GST_RATE;
@@ -38,7 +40,7 @@ export const useCart = () => {
       const discount = prev.discount || 0;
       const total = subtotal + gst + deliveryFee - discount;
 
-      return {
+      const newCart = {
         ...prev,
         items,
         subtotal,
@@ -46,6 +48,8 @@ export const useCart = () => {
         deliveryFee,
         total,
       };
+      console.log("New cart state:", newCart);
+      return newCart;
     });
 
     toast({
