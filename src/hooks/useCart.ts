@@ -19,25 +19,10 @@ export const useCart = () => {
     };
   });
 
-  // Calculate totals whenever cart items change
+  // Save cart to localStorage whenever it changes
   useEffect(() => {
-    const subtotal = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const gst = subtotal * GST_RATE;
-    const deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
-    const discount = cart.discount || 0;
-    const total = subtotal + gst + deliveryFee - discount;
-
-    const updatedCart = {
-      ...cart,
-      subtotal,
-      gst,
-      deliveryFee,
-      total,
-    };
-
-    setCart(updatedCart);
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(updatedCart));
-  }, [cart.items, cart.discount]);
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+  }, [cart]);
 
   const addToCart = (item: Omit<CartItem, "id">) => {
     const newItem: CartItem = {
@@ -45,10 +30,23 @@ export const useCart = () => {
       id: `${item.itemId}-${Date.now()}`,
     };
 
-    setCart((prev) => ({
-      ...prev,
-      items: [...prev.items, newItem],
-    }));
+    setCart((prev) => {
+      const items = [...prev.items, newItem];
+      const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const gst = subtotal * GST_RATE;
+      const deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
+      const discount = prev.discount || 0;
+      const total = subtotal + gst + deliveryFee - discount;
+
+      return {
+        ...prev,
+        items,
+        subtotal,
+        gst,
+        deliveryFee,
+        total,
+      };
+    });
 
     toast({
       title: "Added to cart",
@@ -57,10 +55,23 @@ export const useCart = () => {
   };
 
   const removeFromCart = (itemId: string) => {
-    setCart((prev) => ({
-      ...prev,
-      items: prev.items.filter((item) => item.id !== itemId),
-    }));
+    setCart((prev) => {
+      const items = prev.items.filter((item) => item.id !== itemId);
+      const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const gst = subtotal * GST_RATE;
+      const deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
+      const discount = prev.discount || 0;
+      const total = subtotal + gst + deliveryFee - discount;
+
+      return {
+        ...prev,
+        items,
+        subtotal,
+        gst,
+        deliveryFee,
+        total,
+      };
+    });
 
     toast({
       title: "Removed from cart",
@@ -74,12 +85,25 @@ export const useCart = () => {
       return;
     }
 
-    setCart((prev) => ({
-      ...prev,
-      items: prev.items.map((item) =>
+    setCart((prev) => {
+      const items = prev.items.map((item) =>
         item.id === itemId ? { ...item, quantity } : item
-      ),
-    }));
+      );
+      const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const gst = subtotal * GST_RATE;
+      const deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
+      const discount = prev.discount || 0;
+      const total = subtotal + gst + deliveryFee - discount;
+
+      return {
+        ...prev,
+        items,
+        subtotal,
+        gst,
+        deliveryFee,
+        total,
+      };
+    });
   };
 
   const applyPromoCode = (code: string) => {
@@ -92,11 +116,22 @@ export const useCart = () => {
 
     const discount = promoCodes[code.toUpperCase()];
     if (discount) {
-      setCart((prev) => ({
-        ...prev,
-        promoCode: code,
-        discount,
-      }));
+      setCart((prev) => {
+        const subtotal = prev.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        const gst = subtotal * GST_RATE;
+        const deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
+        const total = subtotal + gst + deliveryFee - discount;
+
+        return {
+          ...prev,
+          promoCode: code,
+          discount,
+          subtotal,
+          gst,
+          deliveryFee,
+          total,
+        };
+      });
       toast({
         title: "Promo applied!",
         description: `You saved ₹${discount}`,
